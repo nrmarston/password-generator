@@ -57,7 +57,6 @@ const numbersCheckbox = document.getElementById('numbers');
 const symbolsCheckbox = document.getElementById('symbols');
 const copyButton = document.getElementById('copy-btn');
 
-
 function updateCharLength() {
   charLengthText.textContent = charLengthInput.value;
 }
@@ -71,10 +70,14 @@ function generatePassword(length) {
   const numbers = '0123456789';
   const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-  if (!uppercaseCheckbox.checked && !lowercaseCheckbox.checked && !numbersCheckbox.checked && !symbolsCheckbox.checked) {
+  if (
+    !uppercaseCheckbox.checked &&
+    !lowercaseCheckbox.checked &&
+    !numbersCheckbox.checked &&
+    !symbolsCheckbox.checked
+  ) {
     return 'Please select at least one character type';
   }
-  
 
   let charset = '';
   if (uppercaseCheckbox.checked) charset += uppercase;
@@ -88,6 +91,32 @@ function generatePassword(length) {
     password += charset[randomIndex];
   }
   return password;
+}
+
+function copyToClipboard() {
+  const password = passwordInput.value;
+
+  // If there is no password do nothing
+  if (!password) return;
+
+  // If there is a password
+  navigator.clipboard.writeText(password);
+  try {
+    console.log('Copied to clipboard!');
+    // Change button svg to checkmark for 6 seconds then back to original
+    const originalSVG = copyButton.innerHTML;
+    const checkmarkSVG = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+</svg>
+    `;
+    copyButton.innerHTML = checkmarkSVG;
+    setTimeout(() => {
+      copyButton.innerHTML = originalSVG;
+    }, 4000);
+  } catch (error) {
+    console.error('Failed to copy. ', error);
+  }
 }
 
 // Handle generate password button click
@@ -104,4 +133,30 @@ generatePasswordBtn.addEventListener('click', event => {
 // Handle lengh of char change
 charLengthInput.addEventListener('input', () => {
   updateCharLength();
+});
+
+// Handle copy button click
+copyButton.addEventListener('click', () => {
+  copyToClipboard();
+});
+
+/* grab sliders on page */
+const sliders = document.querySelectorAll('input[type="range"]');
+
+/* take a slider element, return a percentage string for use in CSS */
+const rangeToPercent = slider => {
+  const max = slider.getAttribute('max') || 10;
+  const percent = (slider.value / max) * 100;
+
+  return `${parseInt(percent)}%`;
+};
+
+/* on page load, set the fill amount */
+sliders.forEach(slider => {
+  slider.style.setProperty('--track-fill', rangeToPercent(slider));
+
+  /* when a slider changes, update the fill prop */
+  slider.addEventListener('input', e => {
+    e.target.style.setProperty('--track-fill', rangeToPercent(e.target));
+  });
 });
